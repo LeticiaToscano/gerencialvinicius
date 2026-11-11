@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src https://hdgacffmwigdscrtctia.supabase.co wss://hdgacffmwigdscrtctia.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<title>Painel Comercial · Seja Livre Investimentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A;--bg-2:#080B10;--panel:#0B0F15;--panel-2:#0E141B;
+  --line:rgba(255,255,255,.06);--line-2:rgba(255,255,255,.10);
+  --txt:#E6EDF3;--txt-2:#9AA7B4;--txt-3:#5D6B78;
+  --green:#00E676;--cyan:#22D3EE;--gold:#FFB020;--red:#FF5C6C;
+  --glow-green:rgba(0,230,118,.35);--radius:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',system-ui,sans-serif;min-height:100vh;position:relative;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(900px 500px at 88% -8%,rgba(0,230,118,.12),transparent 60%),
+             radial-gradient(800px 600px at -6% 108%,rgba(34,211,238,.10),transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:22px 26px 80px}
+.oculto{display:none!important}
+button{font-family:inherit}
+
+/* topo */
+.topbar{position:relative;z-index:50;display:flex;align-items:center;gap:16px;padding:14px 18px;margin-bottom:22px;flex-wrap:wrap;
+  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 0 22px var(--glow-green);flex-shrink:0}
+.brand-name{font-family:'Sora',sans-serif;font-weight:700;font-size:15px;line-height:1.1}
+.brand-sub{font-size:11px;color:var(--txt-3);letter-spacing:.4px;text-transform:uppercase}
+.spacer{flex:1}
+.quem{font-size:12.5px;color:var(--txt-2)}
+.quem b{color:var(--txt);font-weight:600}
+.btn{font-weight:600;font-size:13.5px;padding:11px 16px;border-radius:11px;cursor:pointer;border:1px solid var(--line-2);background:var(--panel);color:var(--txt-2)}
+.btn:hover{color:var(--txt);border-color:rgba(255,255,255,.2)}
+.btn-primary{background:var(--green);color:#04150C;border-color:var(--green)}
+.btn-primary:hover{color:#04150C;filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* barra de escolha (parceiro + mês + modelo) */
+.escolha{display:grid;grid-template-columns:1.4fr .8fr;gap:12px;margin-bottom:16px;align-items:stretch}
+.campo{background:var(--panel-2);border:1px solid var(--line-2);border-radius:13px;padding:10px 14px;position:relative}
+.campo label{display:block;font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.campo select{width:100%;background:transparent;border:none;color:var(--txt);font-family:'Sora',sans-serif;font-weight:600;font-size:15px;
+  -webkit-appearance:none;appearance:none;cursor:pointer;padding-right:22px}
+.campo select:focus{outline:none}
+.campo select option,.campo select optgroup{background:var(--panel-2);color:var(--txt)}
+.campo::after{content:"▾";position:absolute;right:14px;bottom:13px;color:var(--txt-3);pointer-events:none}
+.modelo{display:flex;flex-direction:column;justify-content:center;background:var(--panel-2);border:1px solid var(--line-2);border-radius:13px;padding:8px 10px}
+.modelo .ml{font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.6px;margin:0 4px 6px}
+.seg{display:flex;gap:4px;background:var(--bg-2);border-radius:10px;padding:4px}
+.seg button{border:none;background:transparent;color:var(--txt-2);font-family:'Sora',sans-serif;font-weight:600;font-size:12.5px;padding:8px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--green);color:#04150C}
+.aviso-sim{display:flex;gap:10px;align-items:center;padding:11px 16px;margin-bottom:16px;border-radius:12px;font-size:13px;color:var(--txt-2);
+  background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.22)}
+.aviso-sim b{color:var(--gold)}
+
+/* cartões */
+.card{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:var(--radius);position:relative;overflow:hidden}
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-bottom:16px}
+.hero-id{padding:26px 28px}
+.hero-id::after{content:"";position:absolute;top:-40%;right:-15%;width:320px;height:320px;background:radial-gradient(circle,rgba(0,230,118,.14),transparent 65%);pointer-events:none}
+.eyebrow{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt-3);margin-bottom:10px}
+.hero-nome{font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(24px,3.2vw,36px);line-height:1.08}
+.hero-meta{margin-top:16px;font-size:13px;color:var(--txt-2);line-height:1.7}
+.hero-meta b{color:var(--txt);font-weight:600}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tag{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:5px 10px;border-radius:20px;border:1px solid}
+.tag.g{color:var(--green);background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3)}
+.tag.o{color:var(--gold);background:rgba(255,176,32,.08);border-color:rgba(255,176,32,.3)}
+.tag.c{color:var(--cyan);background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.3)}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.hstat{background:var(--bg-2);padding:20px 22px}
+.hstat .k{font-size:11px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.hstat .v{font-family:'Sora',sans-serif;font-weight:700;font-size:26px;font-variant-numeric:tabular-nums;line-height:1}
+.hstat .v.g{color:var(--green)}.hstat .v.c{color:var(--cyan)}
+.hstat .u{font-size:11px;color:var(--txt-3);margin-top:5px}
+
+.liquido{grid-column:1 / -1;padding:28px 30px;background:linear-gradient(180deg,rgba(0,230,118,.06),rgba(34,211,238,.03)),linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid rgba(0,230,118,.18)}
+.liq-grid{display:grid;grid-template-columns:1.1fr 1.4fr;gap:34px;align-items:center}
+.liq-label{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.liq-big{font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(40px,5.4vw,64px);line-height:.95;letter-spacing:-1px;font-variant-numeric:tabular-nums;
+  background:linear-gradient(100deg,var(--green) 0%,#7CF3B4 45%,var(--cyan) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.liq-big.neg{background:none;-webkit-text-fill-color:var(--red);color:var(--red)}
+.liq-note{margin-top:12px;font-size:12.5px;color:var(--txt-2);max-width:360px;line-height:1.55}
+.liq-note b{color:var(--txt)}
+.waterfall{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.wf-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--bg-2)}
+.wf-row .wl{display:flex;align-items:center;gap:11px;font-size:13.5px;color:var(--txt-2)}
+.wf-row .ic{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:13px}
+.wf-row .wv{font-family:'Sora',sans-serif;font-weight:600;font-size:16px;font-variant-numeric:tabular-nums}
+.wf-row.neg .wv{color:var(--red)}.wf-row.neg .ic{background:rgba(255,92,108,.10);color:var(--red)}
+.wf-row.add .wv{color:var(--green)}.wf-row.add .ic{background:rgba(0,230,118,.10);color:var(--green)}
+.wf-row.sub{background:rgba(255,255,255,.02)}
+.wf-row.sub .wl{color:var(--txt);font-weight:600}.wf-row.sub .ic{background:rgba(255,255,255,.06);color:var(--txt)}
+.wf-row.total{background:linear-gradient(90deg,rgba(0,230,118,.09),rgba(0,230,118,.02))}
+.wf-row.total .wl{color:var(--txt);font-weight:600}.wf-row.total .ic{background:rgba(0,230,118,.14);color:var(--green)}
+.wf-row.total .wv{color:var(--green);font-size:19px;font-weight:700}
+
+/* seções */
+.section{margin-top:30px}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.sec-head h2{font-family:'Sora',sans-serif;font-weight:700;font-size:19px}
+.sec-head .sh-sub{font-size:12.5px;color:var(--txt-3)}
+.sec-head .sh-line{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);align-self:center;margin-left:6px}
+
+.custos{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)}
+.cst{background:var(--bg-2);padding:18px 20px}
+.cst .k{font-size:10.5px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.cst .v{font-family:'Sora',sans-serif;font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.cst .v.r{color:var(--red)}
+.cst .u{font-size:11px;color:var(--txt-3);margin-top:4px}
+
+/* tabela de clientes */
+.tbar{display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.busca{flex:1;min-width:200px;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;color:var(--txt);font-size:13.5px;padding:10px 12px}
+.busca:focus{outline:none;border-color:var(--cyan)}
+.chk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--txt-2);cursor:pointer;user-select:none}
+.chk input{accent-color:var(--green)}
+.rola{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:980px}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt-3);font-weight:600;text-align:left;padding:13px 12px;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--txt-2)}
+th .sd{color:var(--green)}
+td{padding:11px 12px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;color:var(--txt-2);white-space:nowrap}
+th.n,td.n{text-align:right}
+td.nm{color:var(--txt);font-weight:600;white-space:normal;min-width:200px}
+td.nm small{display:block;color:var(--txt-3);font-weight:400;font-size:11.5px;margin-top:2px}
+td.pos{color:var(--green);font-family:'Sora',sans-serif;font-weight:700}
+td.neg{color:var(--red);font-family:'Sora',sans-serif;font-weight:700}
+td.r{color:var(--red)}
+tr.cli{cursor:pointer}
+tr.cli:hover td{background:rgba(255,255,255,.02)}
+tr.det td{background:rgba(34,211,238,.03);padding:4px 12px 14px 40px;white-space:normal}
+.prods{display:flex;flex-wrap:wrap;gap:8px}
+.prod{font-size:12px;padding:6px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--line-2);color:var(--txt-2)}
+.prod b{color:var(--red);font-family:'Sora',sans-serif;margin-left:6px}
+.novo{font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--cyan);background:rgba(34,211,238,.10);padding:2px 7px;border-radius:12px;margin-left:6px;vertical-align:1px}
+tfoot td{border-top:1px solid var(--line-2);color:var(--txt);font-weight:700;font-family:'Sora',sans-serif;background:rgba(255,255,255,.02)}
+.vazio{padding:34px;text-align:center;color:var(--txt-3);font-size:13.5px;line-height:1.6}
+
+/* evolução */
+.evo{padding:24px 24px 8px}
+.bars{display:flex;align-items:flex-end;gap:10px;height:190px;padding:24px 4px 0;border-bottom:1px solid var(--line-2)}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;min-width:0}
+.bar .bv{font-family:'Sora',sans-serif;font-size:11px;font-weight:600;color:var(--txt-2);margin-bottom:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.bar .bb{width:100%;max-width:54px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,var(--green),rgba(0,230,118,.35));transition:height .8s cubic-bezier(.16,1,.3,1)}
+.bar.zero .bb{background:rgba(255,255,255,.08)}
+.bar.active .bb{box-shadow:0 0 0 2px var(--txt)}
+.bars-x{display:flex;gap:10px;padding:8px 4px 14px}
+.bars-x span{flex:1;text-align:center;font-size:11px;color:var(--txt-3);text-transform:capitalize}
+#evoTab td.m{color:var(--txt);font-weight:600;text-transform:capitalize}
+#evoTab tr{cursor:pointer}
+#evoTab tr.sel td{background:rgba(0,230,118,.05)}
+.et{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:4px 9px;border-radius:20px}
+.et.pago{color:var(--green);background:rgba(0,230,118,.10)}
+.et.aberto{color:var(--gold);background:rgba(255,176,32,.10)}
+
+/* login */
+.estado{max-width:430px;margin:9vh auto 0;padding:38px 32px;text-align:center}
+.estado h1{font-family:'Sora',sans-serif;font-size:22px;margin:16px 0 8px}
+.estado p{font-size:13.5px;color:var(--txt-2);line-height:1.6}
+.cadeado{width:54px;height:54px;border-radius:15px;margin:0 auto;display:grid;place-items:center;background:rgba(0,230,118,.10);color:var(--green)}
+.inp{width:100%;margin-top:12px;background:var(--panel);border:1px solid var(--line-2);border-radius:11px;color:var(--txt);font-size:14.5px;padding:13px 14px}
+.inp:focus{outline:none;border-color:var(--green)}
+.inp.cod{text-align:center;letter-spacing:10px;font-family:'Sora',sans-serif;font-weight:700;font-size:24px}
+.estado .btn{width:100%;margin-top:14px;padding:14px}
+.msg{min-height:20px;margin-top:12px;font-size:13px;color:var(--red)}
+.qr{background:#fff;border-radius:12px;padding:10px;width:200px;height:200px;margin:18px auto 6px}
+.qr img{width:100%;height:100%}
+.segredo{font-size:11.5px;color:var(--txt-3);word-break:break-all;margin-top:6px}
+.giro{width:30px;height:30px;border-radius:50%;border:3px solid var(--line-2);border-top-color:var(--green);animation:gira .8s linear infinite;margin:0 auto}
+@keyframes gira{to{transform:rotate(360deg)}}
+.carregando{opacity:.45;pointer-events:none;transition:opacity .2s}
+.footer{margin-top:40px;text-align:center;font-size:11.5px;color:var(--txt-3)}
+.footer b{color:var(--txt-2);font-weight:600}
+
+@media (max-width:940px){
+  .wrap{padding:16px 16px 60px}
+  .hero,.liq-grid{grid-template-columns:1fr}
+  .escolha{grid-template-columns:1fr}
+  .custos{grid-template-columns:1fr 1fr}
+  .bars{gap:5px}.bar .bv{display:none}
+}
+@media (prefers-reduced-motion:reduce){.bar .bb{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 13.5L9 19L21 5" stroke="#04150C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><div class="brand-name">Seja Livre Investimentos</div><div class="brand-sub">Painel Comercial · reunião com parceiros</div></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="quem oculto" id="quem"></div>
+    <button class="btn oculto" id="sair">Sair</button>
+  </div>
+
+  <div class="card estado" id="estado"><div class="giro"></div><h1>Carregando…</h1></div>
+
+  <div id="app" class="oculto">
+    <div class="escolha">
+      <div class="campo"><label>Parceiro</label><select id="selParc"></select></div>
+      <div class="campo"><label>Competência</label><select id="selMes"></select></div>
+    </div>
+
+    <div id="painel">
+      <div class="hero">
+        <div class="card hero-id">
+          <div class="eyebrow">Parceiro</div>
+          <div class="hero-nome" id="hNome">—</div>
+          <div class="hero-meta" id="hMeta"></div>
+          <div class="tags" id="hTags"></div>
+        </div>
+        <div class="card hero-stats">
+          <div class="hstat"><div class="k">Clientes que operaram</div><div class="v c" id="sAtivos">0</div><div class="u" id="sAtivosU">no mês</div></div>
+          <div class="hstat"><div class="k">Contratos no mês</div><div class="v" id="sCon">0</div><div class="u">operados no mês</div></div>
+          <div class="hstat"><div class="k">Novos clientes</div><div class="v g" id="sNov">0</div><div class="u">habilitados no mês</div></div>
+          <div class="hstat"><div class="k">Zeragem</div><div class="v" id="sZer">0</div><div class="u">contratos zerados no mês</div></div>
+        </div>
+
+        <div class="card liquido">
+          <div class="liq-grid">
+            <div>
+              <div class="liq-label">● Líquido do parceiro no mês</div>
+              <div class="liq-big" id="liqBig">R$ 0</div>
+              <div class="liq-note" id="liqNote"></div>
+            </div>
+            <div class="waterfall">
+              <div class="wf-row add"><span class="wl"><span class="ic">%</span> Receitas</span><span class="wv" id="wRec">R$ 0</span></div>
+              <div class="wf-row neg"><span class="wl"><span class="ic">−</span> Plataformas</span><span class="wv" id="wPlat">R$ 0</span></div>
+              <div class="wf-row add"><span class="wl"><span class="ic">+</span> <span id="wExtraNome">Bônus (faixas)</span></span><span class="wv" id="wExtra">R$ 0</span></div>
+              <div class="wf-row sub"><span class="wl"><span class="ic">=</span> Total</span><span class="wv" id="wTot">R$ 0</span></div>
+              <div class="wf-row neg"><span class="wl"><span class="ic">−</span> Imposto (<span id="wImpPct">19,57%</span>)</span><span class="wv" id="wImp">R$ 0</span></div>
+              <div class="wf-row neg oculto" id="wAjRow"><span class="wl"><span class="ic">−</span> <span id="wAjNome">Ajuste</span></span><span class="wv" id="wAj">R$ 0</span></div>
+              <div class="wf-row total"><span class="wl"><span class="ic">=</span> Líquido do parceiro</span><span class="wv" id="wLiq">R$ 0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-head"><h2>Custos de plataforma</h2><span class="sh-sub">o que a casa pagou pelos clientes no mês · valor total, antes da divisão</span><span class="sh-line"></span></div>
+        <div class="card"><div class="custos">
+          <div class="cst"><div class="k">Plataformas</div><div class="v r" id="cOp">R$ 0</div><div class="u">Profit, DMA, MetaTrader…</div></div>
+          <div class="cst"><div class="k">Automação</div><div class="v r" id="cAut">R$ 0</div><div class="u">planos Plus e Premium</div></div>
+          <div class="cst"><div class="k">Akeloo</div><div class="v r" id="cAke">R$ 0</div><div class="u">assinaturas</div></div>
+          <div class="cst"><div class="k">Total de custos</div><div class="v r" id="cTot">R$ 0</div><div class="u" id="cPct">— da receita</div></div>
+        </div></div>
+      </div>
+
+      <div class="section" id="secFaixas">
+        <div class="sec-head"><h2>De onde vem o bônus</h2><span class="sh-sub">clientes bonificados em cada faixa de pontos no mês · valores totais, antes da divisão</span><span class="sh-line"></span></div>
+        <div class="card">
+          <div class="rola"><table>
+            <thead><tr><th>Faixa de pontos</th><th class="n">Clientes</th><th class="n">Bônus por cliente</th><th class="n">Bônus da faixa</th><th class="n">% do bônus</th></tr></thead>
+            <tbody id="corpoFx"></tbody>
+            <tfoot id="rodFx"></tfoot>
+          </table></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-head"><h2>Evolução no ano</h2><span class="sh-sub">líquido do parceiro mês a mês · clique num mês para abrir</span><span class="sh-line"></span></div>
+        <div class="card">
+          <div class="evo"><div class="bars" id="bars"></div><div class="bars-x" id="barsX"></div></div>
+          <div class="rola"><table id="evoTab">
+            <thead><tr><th>Mês</th><th class="n">Novos</th><th class="n">Contratos</th><th class="n">Receitas</th><th class="n">Plataformas</th><th class="n" id="evoExtra">Bônus</th><th class="n">Líquido</th><th>Pagamento</th></tr></thead>
+            <tbody id="evoCorpo"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Uso interno · <b>Seja Livre Investimentos</b> · dados confidenciais do parceiro</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* A chave abaixo é a pública (publishable). Ela não dá acesso a nada sozinha:
+   todas as funções do painel exigem login e só devolvem os parceiros da
+   carteira de quem está logado. Neste endereço, só o Vini (ou o gerencial) entra. */
+const SUPABASE_URL = "https://hdgacffmwigdscrtctia.supabase.co";
+const SUPABASE_KEY = "sb_publishable_8-g_Xdbxmb52CnPVhOpkBw_BmJk2M1a";
+const SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true, storage:window.sessionStorage}});
+
+const MESES_NOME = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const el = id => document.getElementById(id);
+const N = v => Number(v) || 0;
+const money = n => (n < -0.004 ? '− ' : '') + 'R$ ' + Math.abs(n).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+const money0 = n => (n < -0.5 ? '− ' : '') + 'R$ ' + Math.round(Math.abs(n)).toLocaleString('pt-BR');
+const num = n => Math.round(N(n)).toLocaleString('pt-BR');
+const pct = n => (n*100).toLocaleString('pt-BR',{maximumFractionDigits:2}) + '%';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mesNome = c => { const [a,m] = String(c).split('-'); return MESES_NOME[+m-1] + '/' + a; };
+const mesCurto = c => MESES_NOME[+String(c).split('-')[1]-1].slice(0,3);
+
+/* ===================== LOGIN (e-mail + senha + código do celular) ===================== */
+function tela(html){ el('estado').innerHTML = html; el('estado').classList.remove('oculto'); el('app').classList.add('oculto'); }
+const CADEADO = '<div class="cadeado"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2"/></svg></div>';
+
+function telaLogin(msg){
+  tela(CADEADO + '<h1>Entrar</h1><p>Use o e-mail e a senha cadastrados pela Seja Livre.</p>' +
+    '<input class="inp" id="lEmail" type="email" autocomplete="username" placeholder="e-mail">' +
+    '<input class="inp" id="lSenha" type="password" autocomplete="current-password" placeholder="senha">' +
+    '<button class="btn btn-primary" id="lOk">Entrar</button><div class="msg" id="lMsg">' + esc(msg||'') + '</div>');
+  const ir = async () => {
+    const email = el('lEmail').value.trim(), password = el('lSenha').value;
+    if(!email || !password) return el('lMsg').textContent = 'Preencha e-mail e senha.';
+    el('lOk').disabled = true; el('lMsg').style.color = 'var(--txt-3)'; el('lMsg').textContent = 'Conferindo…';
+    const { error } = await SB.auth.signInWithPassword({email, password});
+    if(error) return telaLogin('E-mail ou senha incorretos.');
+    passoMfa();
+  };
+  el('lOk').onclick = ir;
+  el('lSenha').onkeydown = e => { if(e.key === 'Enter') ir(); };
+  el('lEmail').focus();
+}
+
+async function passoMfa(){
+  // este painel entra só com e-mail e senha, sem o código do celular (pedido de 21/10)
+  return abrir();
+  const { data: aal } = await SB.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aal && aal.currentLevel === 'aal2') return abrir();
+  const { data: f } = await SB.auth.mfa.listFactors();
+  const totp = (f && f.totp || []).find(x => x.status === 'verified');
+  if(totp) return telaCodigo(totp.id);
+  // primeiro acesso: cadastrar o aplicativo autenticador
+  (f && f.all || []).filter(x => x.status !== 'verified').forEach(x => SB.auth.mfa.unenroll({factorId:x.id}));
+  const { data, error } = await SB.auth.mfa.enroll({factorType:'totp', friendlyName:'celular-' + Date.now()});
+  if(error) return telaLogin('Não foi possível iniciar o cadastro do código. Tente de novo.');
+  telaCodigo(data.id, data.totp);
+}
+
+function telaCodigo(factorId, cadastro, msg){
+  tela(CADEADO + (cadastro
+      ? '<h1>Proteja seu acesso</h1><p>Abra o Google Authenticator (ou outro app de código) no celular e leia o QR abaixo. Depois digite o código de 6 dígitos que aparecer.</p>' +
+        '<div class="qr"><img alt="QR code" src="' + esc(cadastro.qr_code) + '"></div><div class="segredo">ou digite a chave: ' + esc(cadastro.secret) + '</div>'
+      : '<h1>Código do celular</h1><p>Digite o código de 6 dígitos do seu aplicativo autenticador.</p>') +
+    '<input class="inp cod" id="cCod" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">' +
+    '<button class="btn btn-primary" id="cOk">Confirmar</button><div class="msg" id="cMsg">' + esc(msg||'') + '</div>');
+  const inp = el('cCod');
+  inp.oninput = () => { inp.value = inp.value.replace(/\D/g,'').slice(0,6); };
+  const ir = async () => {
+    if(inp.value.length !== 6) return el('cMsg').textContent = 'O código tem 6 dígitos.';
+    el('cOk').disabled = true;
+    const { error } = await SB.auth.mfa.challengeAndVerify({factorId, code: inp.value});
+    if(error) return telaCodigo(factorId, cadastro, 'Código incorreto ou vencido. Tente o próximo.');
+    abrir();
+  };
+  el('cOk').onclick = ir;
+  inp.onkeydown = e => { if(e.key === 'Enter') ir(); };
+  inp.focus();
+}
+
+el('sair').onclick = async () => { await SB.auth.signOut(); location.reload(); };
+
+/* ===================== DADOS ===================== */
+let MODELO = 'novo';  // modelo vigente do parceiro, definido pela Paloma no gerencial (sem seletor)
+let PARCEIROS = [], P = null, ORD = {k:'res', d:-1}, ABERTO = new Set();
+
+async function abrir(){
+  tela('<div class="giro"></div><h1>Carregando…</h1>');
+  const q = await SB.rpc('comercial_quem_sou');
+  if(q.error || !q.data || !q.data.acesso){
+    await SB.auth.signOut();
+    return telaLogin('Este usuário não tem acesso ao painel comercial.');
+  }
+  el('quem').innerHTML = 'Olá, <b>' + esc(q.data.nome || '') + '</b>';
+  el('quem').classList.remove('oculto'); el('sair').classList.remove('oculto');
+  const r = await SB.rpc('comercial_parceiros');
+  if(r.error) return tela('<h1>Não foi possível carregar</h1><p>' + esc(r.error.message) + '</p>');
+  PARCEIROS = r.data || [];
+  if(!PARCEIROS.length) return tela('<h1>Nenhum parceiro liberado</h1><p>Os parceiros aparecem aqui depois que a Seja Livre autoriza no gerencial.</p>');
+
+  const sel = el('selParc');
+  const grupos = {};
+  PARCEIROS.forEach(p => (grupos[p.comercial] = grupos[p.comercial] || []).push(p));
+  const varios = Object.keys(grupos).length > 1;
+  sel.innerHTML = Object.entries(grupos).map(([g, ps]) =>
+    (varios ? '<optgroup label="' + esc(g.charAt(0).toUpperCase() + g.slice(1)) + '">' : '') +
+    ps.map(p => '<option value="' + p.id + '">' + esc(p.parceiro) + ' · ' + esc(p.barra) + '</option>').join('') +
+    (varios ? '</optgroup>' : '')).join('');
+  let ult = null; try { ult = sessionStorage.getItem('comercial_parc'); } catch(e){}
+  if(ult && PARCEIROS.some(p => String(p.id) === ult)) sel.value = ult;
+  sel.onchange = () => { try { sessionStorage.setItem('comercial_parc', sel.value); } catch(e){} carregar(+sel.value); };
+  el('selMes').onchange = () => carregar(+sel.value, el('selMes').value);
+
+  el('estado').classList.add('oculto'); el('app').classList.remove('oculto');
+  carregar(+sel.value);
+}
+
+async function carregar(id, comp){
+  el('painel').classList.add('carregando');
+  const r = await SB.rpc('comercial_painel', {p_id:id, p_competencia: comp || null});
+  el('painel').classList.remove('carregando');
+  if(r.error){
+    if(/permiss|JWT|aal/i.test(r.error.message)) return telaLogin('Sua sessão expirou. Entre de novo.');
+    return alert('Não foi possível carregar: ' + r.error.message);
+  }
+  P = r.data; ABERTO.clear(); MODELO = modeloOficial();
+  const info = PARCEIROS.find(p => p.id === id) || {};
+  montarMeses(); render();
+}
+
+function mesAtual(){ return (P.meses || []).find(m => m.competencia === P.competencia) || null; }
+function modeloOficial(){ const m = mesAtual() || (P.meses||[]).slice(-1)[0]; return (m && m.modelo === 'antigo') ? 'antigo' : 'novo'; }
+
+function montarMeses(){
+  const meses = (P.meses || []).filter(m => N(m.receita) || N(m.contratos) || N(m.bonus) || N(m.custos));
+  el('selMes').innerHTML = meses.length
+    ? meses.slice().reverse().map(m => '<option value="' + m.competencia + '"' + (m.competencia === P.competencia ? ' selected' : '') + '>' + esc(mesNome(m.competencia)) + '</option>').join('')
+    : '<option>sem movimento</option>';
+}
+
+
+/* Valores do mês no modelo escolhido. Os totais vêm do banco (mesma conta do gerencial). */
+function contas(m){
+  const pctP = N(m.pct_parceiro) || 0.5, imp = N(m.imposto_pct);
+  const extra = m.modelo === 'antigo' ? N(m.por_contrato) : N(m.bonus);   // cada mês no modelo que valeu nele
+  const total = N(m.receita) + N(m.custos) + extra;
+  const liq = N(m.a_pagar);                                   // já vem com os valores ajustados pela Paloma
+  const semAjuste = total < 0 ? 0 : Math.round(total * (1 - imp) * pctP * 100) / 100;
+  return { rec:N(m.receita)*pctP, plat:N(m.custos)*pctP, extra:extra*pctP, total:total*pctP,
+           imp: total < 0 ? 0 : total*pctP - semAjuste, liq, aj: liq - semAjuste, negativo: total < 0, pctP, impPct: imp };
+}
+
+/* ===================== TELA ===================== */
+function render(){
+  const m = mesAtual();
+
+  el('hNome').textContent = P.parceiro;
+  document.title = P.parceiro + ' · Painel Comercial';
+  el('hMeta').innerHTML = 'Barra <b>' + esc(P.barra) + '</b>' + (P.etiqueta ? ' · clientes com a etiqueta <b>' + esc(P.etiqueta) + '</b>' : '') +
+    '<br>Competência <b>' + (m ? esc(mesNome(m.competencia)) : '—') + '</b>';
+  const tags = [];
+  if(m) tags.push(m.status === 'pago' ? '<span class="tag g">Pago</span>' : '<span class="tag o">Em aberto</span>');
+  if(P.etiqueta) tags.push('<span class="tag o">Barra compartilhada</span>');
+  el('hTags').innerHTML = tags.join('');
+
+  const ct = P.contagem || {};
+  if(!m){
+    ['sAtivos','sCon','sNov','sZer'].forEach(k => el(k).textContent = '0');
+    el('liqBig').textContent = 'R$ 0';
+    el('liqNote').innerHTML = P.etiqueta
+      ? 'Nenhum cliente da <b>' + esc(P.barra) + '</b> está com a etiqueta <b>' + esc(P.etiqueta) + '</b> no CRM, ou eles não tiveram movimento neste ano. Etiquete os clientes no CRM (tela Clientes) para o painel aparecer.'
+      : 'Nenhum mês deste parceiro foi liberado para visualização ainda.';
+    renderCustos(null); renderFaixas(); renderEvolucao(); return;
+  }
+  const c = contas(m);
+  el('sAtivos').textContent = num(ct.clientes_operaram);
+  el('sAtivosU').textContent = 'de ' + num(ct.clientes_mov) + ' com movimento';
+  el('sCon').textContent = num(m.contratos);
+  el('sZer').textContent = num(m.zeragem);
+  el('sNov').textContent = num(m.novos);
+
+  el('liqBig').textContent = money(c.liq);
+  el('liqBig').classList.toggle('neg', c.liq < 0);
+  el('liqNote').innerHTML =
+    c.negativo ? 'Os custos de plataforma passaram da receita e do bônus. <b>Não há imposto sobre prejuízo e nada é descontado do parceiro</b>: o valor do mês fica zerado.'
+    : '';
+  el('wRec').textContent = money(c.rec);
+  el('wPlat').textContent = money(c.plat);
+  el('wExtraNome').textContent = 'Bônus';
+  el('wExtra').textContent = '+ ' + money(c.extra);
+  el('wTot').textContent = money(c.total);
+  el('wImpPct').textContent = pct(c.impPct);
+  el('wImp').textContent = money(-c.imp);
+  el('wAjRow').classList.toggle('oculto', Math.abs(c.aj) < 1);
+  el('wAjNome').textContent = c.negativo && c.aj > 0 ? 'Prejuízo não descontado' : 'Ajuste do fechamento';
+  el('wAj').textContent = money(c.aj);
+  el('wAjRow').className = 'wf-row ' + (c.aj < 0 ? 'neg' : 'add') + (Math.abs(c.aj) < 1 ? ' oculto' : '');
+  el('wLiq').textContent = money(c.liq);
+
+  renderCustos(m); renderFaixas(); renderEvolucao();
+}
+
+function renderCustos(m){
+  const v = k => m ? N(m[k]) : 0;
+  el('cOp').textContent = money(v('custo_op'));
+  el('cAut').textContent = money(v('custo_aut'));
+  el('cAke').textContent = money(v('custo_ake'));
+  el('cTot').textContent = money(v('custos'));
+  el('cPct').textContent = m && N(m.receita) ? (Math.abs(v('custos'))/N(m.receita)*100).toFixed(0) + '% da receita' : '— da receita';
+}
+
+/* ---------- bônus por faixa (só modelo novo; o comercial não vê clientes um a um) ---------- */
+function renderFaixas(){
+  const sec = el('secFaixas');
+  sec.classList.toggle('oculto', MODELO === 'antigo');
+  if(MODELO === 'antigo') return;
+  const fx = P.faixas || [], tot = fx.reduce((t, f) => t + N(f.total), 0), qt = fx.reduce((t, f) => t + N(f.clientes), 0);
+  if(!fx.length){
+    el('corpoFx').innerHTML = '<tr><td colspan="5" class="vazio">Nenhum cliente bonificado neste mês.</td></tr>';
+    el('rodFx').innerHTML = ''; return;
+  }
+  el('corpoFx').innerHTML = fx.map(f => '<tr><td>' + esc(f.faixa) + '</td><td class="n">' + num(f.clientes) + '</td>' +
+    '<td class="n">' + money(N(f.bonus)) + '</td><td class="n pos">' + money(N(f.total)) + '</td>' +
+    '<td class="n">' + (tot ? (N(f.total) / tot * 100).toFixed(1).replace('.', ',') + '%' : '—') + '</td></tr>').join('');
+  el('rodFx').innerHTML = '<tr><td>Total</td><td class="n">' + num(qt) + '</td><td></td><td class="n pos">' + money(tot) + '</td><td class="n">100%</td></tr>';
+}
+
+/* ---------- evolução ---------- */
+function renderEvolucao(){
+  const meses = (P.meses || []).filter(m => N(m.receita) || N(m.contratos) || N(m.bonus) || N(m.custos));
+  el('evoExtra').textContent = 'Bônus';
+  if(!meses.length){ el('bars').innerHTML = ''; el('barsX').innerHTML = ''; el('evoCorpo').innerHTML = '<tr><td colspan="8" class="vazio">Sem movimento no ano.</td></tr>'; return; }
+  const vals = meses.map(m => contas(m).liq), mx = Math.max(1, ...vals);
+  el('bars').innerHTML = meses.map((m, i) => '<div class="bar' + (vals[i] <= 0 ? ' zero' : '') + (m.competencia === P.competencia ? ' active' : '') + '" data-c="' + m.competencia + '">' +
+    '<div class="bv">' + money0(vals[i]) + '</div><div class="bb" style="height:' + Math.max(2, vals[i] / mx * 100) + '%"></div></div>').join('');
+  el('barsX').innerHTML = meses.map(m => '<span>' + mesCurto(m.competencia) + '</span>').join('');
+  el('evoCorpo').innerHTML = meses.slice().reverse().map(m => {
+    const c = contas(m), ex = m.modelo === 'antigo' ? N(m.por_contrato) : N(m.bonus);
+    return '<tr data-c="' + m.competencia + '" class="' + (m.competencia === P.competencia ? 'sel' : '') + '"><td class="m">' + esc(mesNome(m.competencia)) + '</td>' +
+      '<td class="n">' + num(m.novos) + '</td><td class="n">' + num(m.contratos) + '</td><td class="n">' + money(N(m.receita)) + '</td>' +
+      '<td class="n r">' + money(N(m.custos)) + '</td><td class="n">' + money(ex) + '</td>' +
+      '<td class="n ' + (c.liq < 0 ? 'neg' : 'pos') + '">' + money(c.liq) + '</td>' +
+      '<td>' + (N(c.liq) > 0 ? '<span class="et ' + (m.status === 'pago' ? 'pago">Pago' : 'aberto">Em aberto') + '</span>' : '—') + '</td></tr>';
+  }).join('');
+  const ir = c => { if(c !== P.competencia) carregar(P.id, c); };
+  el('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => ir(b.dataset.c));
+  el('evoCorpo').querySelectorAll('tr').forEach(t => t.onclick = () => ir(t.dataset.c));
+}
+
+/* ===================== INÍCIO ===================== */
+(async () => {
+  const { data } = await SB.auth.getSession();
+  if(data && data.session) passoMfa(); else telaLogin();
+})();
+</script>
+</body>
+</html>
