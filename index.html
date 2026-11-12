@@ -57,6 +57,15 @@ button{font-family:inherit}
 .seg{display:flex;gap:4px;background:var(--bg-2);border-radius:10px;padding:4px}
 .seg button{border:none;background:transparent;color:var(--txt-2);font-family:'Sora',sans-serif;font-weight:600;font-size:12.5px;padding:8px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--green);color:#04150C}
+.campo-parc{display:flex;gap:10px;align-items:stretch}
+.campo-parc .campo{flex:1}
+.btn-somar{white-space:nowrap}
+.btn-somar.on{background:rgba(0,230,118,.12);color:var(--green);border-color:rgba(0,230,118,.4)}
+.soma-box{background:var(--panel-2);border:1px solid var(--line-2);border-radius:13px;padding:14px 16px;margin-bottom:16px}
+.soma-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;font-size:12.5px;color:var(--txt-2)}
+.soma-top b{color:var(--txt)}
+.soma-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 14px;max-height:240px;overflow:auto}
+.soma-lista .chk{padding:5px 2px}
 .aviso-sim{display:flex;gap:10px;align-items:center;padding:11px 16px;margin-bottom:16px;border-radius:12px;font-size:13px;color:var(--txt-2);
   background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.22)}
 .aviso-sim b{color:var(--gold)}
@@ -208,8 +217,13 @@ tfoot td{border-top:1px solid var(--line-2);color:var(--txt);font-weight:700;fon
 
   <div id="app" class="oculto">
     <div class="escolha">
-      <div class="campo"><label>Parceiro</label><select id="selParc"></select></div>
+      <div class="campo-parc"><div class="campo"><label id="lblParc">Parceiro</label><select id="selParc"></select></div><button class="btn btn-somar" id="btnSomar" title="Somar duas ou mais barras num painel só">Somar barras</button></div>
       <div class="campo"><label>Competência</label><select id="selMes"></select></div>
+    </div>
+
+    <div class="soma-box oculto" id="somaBox">
+      <div class="soma-top"><span>Marque as barras para somar · <b id="somaQt">0</b> marcadas</span><span class="spacer"></span><button class="btn" id="somaTodas">Marcar todas</button><button class="btn" id="somaNenhuma">Limpar</button></div>
+      <div class="soma-lista" id="somaLista"></div>
     </div>
 
     <div id="painel">
@@ -393,7 +407,8 @@ async function abrir(){
   let ult = null; try { ult = sessionStorage.getItem('comercial_parc'); } catch(e){}
   if(ult && PARCEIROS.some(p => String(p.id) === ult)) sel.value = ult;
   sel.onchange = () => { try { sessionStorage.setItem('comercial_parc', sel.value); } catch(e){} carregar(+sel.value); };
-  el('selMes').onchange = () => carregar(+sel.value, el('selMes').value);
+  el('selMes').onchange = () => recarregar(el('selMes').value);
+  montarSoma();
 
   el('estado').classList.add('oculto'); el('app').classList.remove('oculto');
   carregar(+sel.value);
@@ -410,6 +425,84 @@ async function carregar(id, comp){
   P = r.data; ABERTO.clear(); MODELO = modeloOficial();
   const info = PARCEIROS.find(p => p.id === id) || {};
   montarMeses(); render();
+}
+
+/* ---------- somar barras: soma no navegador os painéis de cada barra marcada
+   (cada um passa pela mesma checagem de carteira no banco) ---------- */
+let SOMA = null;   // null = modo normal; Set de ids = modo soma
+function recarregar(comp){ return SOMA ? carregarSoma(comp) : carregar(+el('selParc').value, comp); }
+
+function montarSoma(){
+  el('btnSomar').classList.toggle('oculto', PARCEIROS.length < 2);
+  el('somaLista').innerHTML = PARCEIROS.map(p => '<label class="chk"><input type="checkbox" value="' + p.id + '"> ' + esc(p.parceiro) + ' · ' + esc(p.barra) + '</label>').join('');
+  const marcados = () => [...el('somaLista').querySelectorAll('input:checked')].map(i => +i.value);
+  let t = null;
+  const mudou = () => { const ids = marcados(); el('somaQt').textContent = ids.length; SOMA = new Set(ids);
+    clearTimeout(t); t = setTimeout(() => carregarSoma(el('selMes').value || null), 350); };
+  el('somaLista').onchange = mudou;
+  el('somaTodas').onclick = () => { el('somaLista').querySelectorAll('input').forEach(i => i.checked = true); mudou(); };
+  el('somaNenhuma').onclick = () => { el('somaLista').querySelectorAll('input').forEach(i => i.checked = false); mudou(); };
+  el('btnSomar').onclick = () => {
+    const ligar = !SOMA;
+    el('btnSomar').classList.toggle('on', ligar);
+    el('btnSomar').textContent = ligar ? 'Ver uma barra' : 'Somar barras';
+    el('somaBox').classList.toggle('oculto', !ligar);
+    el('selParc').disabled = ligar; el('lblParc').textContent = ligar ? 'Parceiro (somando barras abaixo)' : 'Parceiro';
+    if(ligar){
+      el('somaLista').querySelectorAll('input').forEach(i => i.checked = i.value === el('selParc').value);
+      SOMA = new Set([+el('selParc').value]); el('somaQt').textContent = 1;
+      carregarSoma(P && P.competencia);
+    } else { SOMA = null; carregar(+el('selParc').value, P && P.competencia); }
+  };
+}
+
+async function carregarSoma(comp){
+  const ids = [...(SOMA || [])];
+  if(!ids.length){ el('painel').classList.add('carregando'); return; }
+  el('painel').classList.add('carregando');
+  const busca = c => Promise.all(ids.map(id => SB.rpc('comercial_painel', {p_id:id, p_competencia: c || null})));
+  let rs = await busca(comp);
+  let erro = rs.find(r => r.error);
+  if(!erro && !comp){   // sem mês escolhido: alinha todas no mês mais recente
+    const ult = rs.map(r => r.data.competencia).filter(Boolean).sort().pop();
+    if(ult && rs.some(r => r.data.competencia !== ult)){ rs = await busca(ult); erro = rs.find(r => r.error); }
+  }
+  el('painel').classList.remove('carregando');
+  if(erro){
+    if(/permiss|JWT|aal/i.test(erro.error.message)) return telaLogin('Sua sessão expirou. Entre de novo.');
+    return alert('Não foi possível carregar: ' + erro.error.message);
+  }
+  P = somarPaineis(rs.map(r => r.data)); ABERTO.clear(); MODELO = P.todosAntigo ? 'antigo' : 'novo';
+  montarMeses(); render();
+}
+
+function somarPaineis(ps){
+  if(ps.length === 1) return ps[0];
+  const CAMPOS = ['novos','contratos','zeragem','receita','custos','custo_op','custo_aut','custo_ake','a_pagar'];
+  const porMes = {};
+  ps.forEach(p => (p.meses || []).forEach(m => {
+    const a = porMes[m.competencia] || (porMes[m.competencia] = {competencia:m.competencia, modelo:'novo', bonus:0,
+      imposto_pct:m.imposto_pct, pct_parceiro:m.pct_parceiro, status:'pago', n:0});
+    CAMPOS.forEach(k => a[k] = N(a[k]) + N(m[k]));
+    a.bonus += m.modelo === 'antigo' ? N(m.por_contrato) : N(m.bonus);   // cada barra no modelo dela
+    if(m.status !== 'pago') a.status = null;
+    a.n++;
+  }));
+  const meses = Object.values(porMes).sort((x, y) => x.competencia < y.competencia ? -1 : 1);
+  meses.forEach(m => { CAMPOS.concat('bonus').forEach(k => m[k] = Math.round(m[k] * 100) / 100); });
+  const comp = ps.map(p => p.competencia).filter(Boolean).sort().pop() || null;
+  const doMes = ps.filter(p => p.competencia === comp);
+  const fx = {};
+  doMes.forEach(p => (p.faixas || []).forEach(f => {
+    const a = fx[f.faixa] || (fx[f.faixa] = {faixa:f.faixa, bonus:N(f.bonus), clientes:0, total:0});
+    a.clientes += N(f.clientes); a.total += N(f.total);
+  }));
+  const todosAntigo = ps.every(p => (p.meses || []).slice(-1).every(m => m.modelo === 'antigo'));
+  return { id:null, soma:true, parceiro: ps.length + ' barras somadas', barra: ps.map(p => p.barra).join(' + '),
+    nomes: ps.map(p => p.parceiro), etiqueta:null, competencia: comp, meses, todosAntigo,
+    contagem: { clientes_operaram: doMes.reduce((t, p) => t + N((p.contagem||{}).clientes_operaram), 0),
+                clientes_mov: doMes.reduce((t, p) => t + N((p.contagem||{}).clientes_mov), 0) },
+    faixas: Object.values(fx).sort((x, y) => y.bonus - x.bonus) };
 }
 
 function mesAtual(){ return (P.meses || []).find(m => m.competencia === P.competencia) || null; }
@@ -440,11 +533,12 @@ function render(){
 
   el('hNome').textContent = P.parceiro;
   document.title = P.parceiro + ' · Painel Comercial';
-  el('hMeta').innerHTML = 'Barra <b>' + esc(P.barra) + '</b>' + (P.etiqueta ? ' · clientes com a etiqueta <b>' + esc(P.etiqueta) + '</b>' : '') +
+  el('hMeta').innerHTML = P.soma ? '<b>' + P.nomes.map(esc).join(' · ') + '</b><br>Barras <b>' + esc(P.barra) + '</b><br>Competência <b>' + (m ? esc(mesNome(m.competencia)) : '—') + '</b>' : 'Barra <b>' + esc(P.barra) + '</b>' + (P.etiqueta ? ' · clientes com a etiqueta <b>' + esc(P.etiqueta) + '</b>' : '') +
     '<br>Competência <b>' + (m ? esc(mesNome(m.competencia)) : '—') + '</b>';
   const tags = [];
   if(m) tags.push(m.status === 'pago' ? '<span class="tag g">Pago</span>' : '<span class="tag o">Em aberto</span>');
   if(P.etiqueta) tags.push('<span class="tag o">Barra compartilhada</span>');
+  if(P.soma) tags.push('<span class="tag c">Soma de barras</span>');
   el('hTags').innerHTML = tags.join('');
 
   const ct = P.contagem || {};
@@ -526,7 +620,7 @@ function renderEvolucao(){
       '<td class="n ' + (c.liq < 0 ? 'neg' : 'pos') + '">' + money(c.liq) + '</td>' +
       '<td>' + (N(c.liq) > 0 ? '<span class="et ' + (m.status === 'pago' ? 'pago">Pago' : 'aberto">Em aberto') + '</span>' : '—') + '</td></tr>';
   }).join('');
-  const ir = c => { if(c !== P.competencia) carregar(P.id, c); };
+  const ir = c => { if(c !== P.competencia) recarregar(c); };
   el('bars').querySelectorAll('.bar').forEach(b => b.onclick = () => ir(b.dataset.c));
   el('evoCorpo').querySelectorAll('tr').forEach(t => t.onclick = () => ir(t.dataset.c));
 }
