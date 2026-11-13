@@ -57,15 +57,26 @@ button{font-family:inherit}
 .seg{display:flex;gap:4px;background:var(--bg-2);border-radius:10px;padding:4px}
 .seg button{border:none;background:transparent;color:var(--txt-2);font-family:'Sora',sans-serif;font-weight:600;font-size:12.5px;padding:8px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--green);color:#04150C}
-.campo-parc{display:flex;gap:10px;align-items:stretch}
-.campo-parc .campo{flex:1}
-.btn-somar{white-space:nowrap}
-.btn-somar.on{background:rgba(0,230,118,.12);color:var(--green);border-color:rgba(0,230,118,.4)}
-.soma-box{background:var(--panel-2);border:1px solid var(--line-2);border-radius:13px;padding:14px 16px;margin-bottom:16px}
-.soma-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;font-size:12.5px;color:var(--txt-2)}
-.soma-top b{color:var(--txt)}
-.soma-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 14px;max-height:240px;overflow:auto}
-.soma-lista .chk{padding:5px 2px}
+.campo-esc{cursor:pointer}
+.campo-esc::after{bottom:13px}
+.esc-bt{width:100%;display:block;text-align:left;background:transparent;border:none;color:var(--txt);font-family:'Sora',sans-serif;font-weight:600;font-size:15px;
+  padding:0 22px 0 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.esc-lista{display:none;position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:60;background:var(--panel-2);border:1px solid var(--line-2);
+  border-radius:13px;box-shadow:0 18px 40px rgba(0,0,0,.55);cursor:default}
+.esc-lista.on{display:block}
+.esc-busca{padding:10px;border-bottom:1px solid var(--line)}
+.esc-busca input{width:100%;background:var(--panel);border:1px solid var(--line-2);border-radius:9px;color:var(--txt);font-size:13px;padding:9px 11px}
+.esc-busca input:focus{outline:none;border-color:rgba(0,230,118,.5)}
+.esc-rol{max-height:300px;overflow-y:auto;padding:6px}
+.esc-grp{font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.6px;padding:10px 10px 4px}
+.esc-it{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--txt-2)}
+.esc-it:hover{background:rgba(255,255,255,.05)}
+.esc-it.on{background:rgba(0,230,118,.08);color:var(--green)}
+.esc-it .ck{flex:0 0 16px;height:16px;border-radius:4px;border:1.5px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:11px;font-weight:700}
+.esc-it.on .ck{border-color:var(--green);background:var(--green);color:#04150C}
+.esc-it .b{font-weight:600;color:inherit;white-space:nowrap}
+.esc-it .p{color:var(--txt-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.esc-dica{padding:8px 12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--txt-3)}
 .aviso-sim{display:flex;gap:10px;align-items:center;padding:11px 16px;margin-bottom:16px;border-radius:12px;font-size:13px;color:var(--txt-2);
   background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.22)}
 .aviso-sim b{color:var(--gold)}
@@ -217,13 +228,10 @@ tfoot td{border-top:1px solid var(--line-2);color:var(--txt);font-weight:700;fon
 
   <div id="app" class="oculto">
     <div class="escolha">
-      <div class="campo-parc"><div class="campo"><label id="lblParc">Parceiro</label><select id="selParc"></select></div><button class="btn btn-somar" id="btnSomar" title="Somar duas ou mais barras num painel só">Somar barras</button></div>
+      <div class="campo campo-esc" id="campoParc"><label>Parceiro</label><button class="esc-bt" id="escBt">—</button>
+        <div class="esc-lista" id="escLista"><div class="esc-busca"><input id="escBusca" placeholder="Buscar… (marque quantas quiser para somar)"></div>
+          <div class="esc-rol" id="escRol"></div><div class="esc-dica">Marque duas ou mais barras para ver o painel somado.</div></div></div>
       <div class="campo"><label>Competência</label><select id="selMes"></select></div>
-    </div>
-
-    <div class="soma-box oculto" id="somaBox">
-      <div class="soma-top"><span>Marque as barras para somar · <b id="somaQt">0</b> marcadas</span><span class="spacer"></span><button class="btn" id="somaTodas">Marcar todas</button><button class="btn" id="somaNenhuma">Limpar</button></div>
-      <div class="soma-lista" id="somaLista"></div>
     </div>
 
     <div id="painel">
@@ -396,22 +404,14 @@ async function abrir(){
   PARCEIROS = r.data || [];
   if(!PARCEIROS.length) return tela('<h1>Nenhum parceiro liberado</h1><p>Os parceiros aparecem aqui depois que a Seja Livre autoriza no gerencial.</p>');
 
-  const sel = el('selParc');
-  const grupos = {};
-  PARCEIROS.forEach(p => (grupos[p.comercial] = grupos[p.comercial] || []).push(p));
-  const varios = Object.keys(grupos).length > 1;
-  sel.innerHTML = Object.entries(grupos).map(([g, ps]) =>
-    (varios ? '<optgroup label="' + esc(g.charAt(0).toUpperCase() + g.slice(1)) + '">' : '') +
-    ps.map(p => '<option value="' + p.id + '">' + esc(p.parceiro) + ' · ' + esc(p.barra) + '</option>').join('') +
-    (varios ? '</optgroup>' : '')).join('');
   let ult = null; try { ult = sessionStorage.getItem('comercial_parc'); } catch(e){}
-  if(ult && PARCEIROS.some(p => String(p.id) === ult)) sel.value = ult;
-  sel.onchange = () => { try { sessionStorage.setItem('comercial_parc', sel.value); } catch(e){} carregar(+sel.value); };
+  MARC = String(ult || '').split(',').map(Number).filter(id => PARCEIROS.some(p => p.id === id));
+  if(!MARC.length) MARC = [PARCEIROS[0].id];
   el('selMes').onchange = () => recarregar(el('selMes').value);
-  montarSoma();
+  montarSeletor();
 
   el('estado').classList.add('oculto'); el('app').classList.remove('oculto');
-  carregar(+sel.value);
+  aplicarSelecao(null);
 }
 
 async function carregar(id, comp){
@@ -429,31 +429,50 @@ async function carregar(id, comp){
 
 /* ---------- somar barras: soma no navegador os painéis de cada barra marcada
    (cada um passa pela mesma checagem de carteira no banco) ---------- */
-let SOMA = null;   // null = modo normal; Set de ids = modo soma
-function recarregar(comp){ return SOMA ? carregarSoma(comp) : carregar(+el('selParc').value, comp); }
+let SOMA = null;   // null = uma barra; Set de ids = barras somadas
+let MARC = [];     // barras marcadas no seletor, na ordem em que foram marcadas
+function recarregar(comp){ return SOMA ? carregarSoma(comp) : carregar(MARC[0], comp); }
 
-function montarSoma(){
-  el('btnSomar').classList.toggle('oculto', PARCEIROS.length < 2);
-  el('somaLista').innerHTML = PARCEIROS.map(p => '<label class="chk"><input type="checkbox" value="' + p.id + '"> ' + esc(p.parceiro) + ' · ' + esc(p.barra) + '</label>').join('');
-  const marcados = () => [...el('somaLista').querySelectorAll('input:checked')].map(i => +i.value);
+/* Seletor de parceiro com várias barras: cada clique marca ou desmarca,
+   e a lista continua aberta para escolher a próxima. 1 marcada = painel
+   normal; 2 ou mais = painel somado. */
+function montarSeletor(){
+  const grupos = {};
+  PARCEIROS.forEach(p => (grupos[p.comercial] = grupos[p.comercial] || []).push(p));
+  const varios = Object.keys(grupos).length > 1;
+  el('escRol').innerHTML = Object.entries(grupos).map(([g, ps]) =>
+    (varios ? '<div class="esc-grp">' + esc(g.charAt(0).toUpperCase() + g.slice(1)) + '</div>' : '') +
+    ps.map(p => '<div class="esc-it" data-id="' + p.id + '" data-t="' + esc((p.parceiro + ' ' + p.barra).toLowerCase()) + '">' +
+      '<span class="ck"></span><span class="b">' + esc(p.parceiro) + '</span><span class="p">' + esc(p.barra) + '</span></div>').join('')
+  ).join('');
+  el('campoParc').querySelector('.esc-dica').classList.toggle('oculto', PARCEIROS.length < 2);
+  pintarSeletor();
   let t = null;
-  const mudou = () => { const ids = marcados(); el('somaQt').textContent = ids.length; SOMA = new Set(ids);
-    clearTimeout(t); t = setTimeout(() => carregarSoma(el('selMes').value || null), 350); };
-  el('somaLista').onchange = mudou;
-  el('somaTodas').onclick = () => { el('somaLista').querySelectorAll('input').forEach(i => i.checked = true); mudou(); };
-  el('somaNenhuma').onclick = () => { el('somaLista').querySelectorAll('input').forEach(i => i.checked = false); mudou(); };
-  el('btnSomar').onclick = () => {
-    const ligar = !SOMA;
-    el('btnSomar').classList.toggle('on', ligar);
-    el('btnSomar').textContent = ligar ? 'Ver uma barra' : 'Somar barras';
-    el('somaBox').classList.toggle('oculto', !ligar);
-    el('selParc').disabled = ligar; el('lblParc').textContent = ligar ? 'Parceiro (somando barras abaixo)' : 'Parceiro';
-    if(ligar){
-      el('somaLista').querySelectorAll('input').forEach(i => i.checked = i.value === el('selParc').value);
-      SOMA = new Set([+el('selParc').value]); el('somaQt').textContent = 1;
-      carregarSoma(P && P.competencia);
-    } else { SOMA = null; carregar(+el('selParc').value, P && P.competencia); }
+  el('escRol').onclick = e => {
+    const it = e.target.closest('.esc-it'); if(!it) return;
+    const id = +it.dataset.id, i = MARC.indexOf(id);
+    if(i >= 0){ if(MARC.length === 1) return; MARC.splice(i, 1); } else MARC.push(id);
+    pintarSeletor();
+    clearTimeout(t); t = setTimeout(() => aplicarSelecao(el('selMes').value || null), 400);
   };
+  el('escBt').onclick = e => { e.stopPropagation(); const l = el('escLista'); l.classList.toggle('on');
+    if(l.classList.contains('on')) el('escBusca').focus(); };
+  el('campoParc').onclick = e => { if(e.target === el('campoParc')) el('escBt').click(); };
+  el('escBusca').oninput = () => { const q = el('escBusca').value.toLowerCase().trim();
+    el('escRol').querySelectorAll('.esc-it').forEach(i => i.style.display = !q || i.dataset.t.includes(q) ? '' : 'none'); };
+  document.addEventListener('click', e => { if(!e.target.closest('#campoParc')) el('escLista').classList.remove('on'); });
+}
+function pintarSeletor(){
+  const marc = new Set(MARC);
+  el('escRol').querySelectorAll('.esc-it').forEach(i => { const on = marc.has(+i.dataset.id);
+    i.classList.toggle('on', on); i.querySelector('.ck').textContent = on ? '✓' : ''; });
+  const p = PARCEIROS.find(x => x.id === MARC[0]) || {};
+  el('escBt').textContent = MARC.length > 1 ? MARC.length + ' barras somadas' : (p.parceiro || '—') + ' · ' + (p.barra || '');
+}
+function aplicarSelecao(comp){
+  try { sessionStorage.setItem('comercial_parc', MARC.join(',')); } catch(e){}
+  if(MARC.length > 1){ SOMA = new Set(MARC); return carregarSoma(comp); }
+  SOMA = null; return carregar(MARC[0], comp);
 }
 
 async function carregarSoma(comp){
