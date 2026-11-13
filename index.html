@@ -101,6 +101,9 @@ button{font-family:inherit}
 .hstat .v{font-family:'Sora',sans-serif;font-weight:700;font-size:26px;font-variant-numeric:tabular-nums;line-height:1}
 .hstat .v.g{color:var(--green)}.hstat .v.c{color:var(--cyan)}
 .hstat .u{font-size:11px;color:var(--txt-3);margin-top:5px}
+.hstat .k .edt{margin-left:6px;background:none;border:1px solid var(--txt-3);color:var(--txt-2);border-radius:6px;font-size:11px;line-height:1;padding:3px 6px;cursor:pointer;text-transform:none;letter-spacing:0}
+.hstat .k .edt:hover{color:var(--green);border-color:var(--green)}
+.hstat .u.aj{color:var(--orange,#f5a524)}
 
 .liquido{grid-column:1 / -1;padding:28px 30px;background:linear-gradient(180deg,rgba(0,230,118,.06),rgba(34,211,238,.03)),linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid rgba(0,230,118,.18)}
 .liq-grid{display:grid;grid-template-columns:1.1fr 1.4fr;gap:34px;align-items:center}
@@ -244,9 +247,9 @@ tfoot td{border-top:1px solid var(--line-2);color:var(--txt);font-weight:700;fon
         </div>
         <div class="card hero-stats">
           <div class="hstat"><div class="k">Clientes que operaram</div><div class="v c" id="sAtivos">0</div><div class="u" id="sAtivosU">no mês</div></div>
-          <div class="hstat"><div class="k">Contratos no mês</div><div class="v" id="sCon">0</div><div class="u">operados no mês</div></div>
+          <div class="hstat"><div class="k">Contratos no mês<button class="edt oculto" id="eCon" title="Editar contratos do mês">✎ editar</button></div><div class="v" id="sCon">0</div><div class="u" id="sConU">operados no mês</div></div>
           <div class="hstat"><div class="k">Novos clientes</div><div class="v g" id="sNov">0</div><div class="u">habilitados no mês</div></div>
-          <div class="hstat"><div class="k">Zeragem</div><div class="v" id="sZer">0</div><div class="u">contratos zerados no mês</div></div>
+          <div class="hstat"><div class="k">Zeragem<button class="edt oculto" id="eZer" title="Editar zeragem do mês">✎ editar</button></div><div class="v" id="sZer">0</div><div class="u" id="sZerU">contratos zerados no mês</div></div>
         </div>
 
         <div class="card liquido">
@@ -388,6 +391,7 @@ el('sair').onclick = async () => { await SB.auth.signOut(); location.reload(); }
 
 /* ===================== DADOS ===================== */
 let MODELO = 'novo';  // modelo vigente do parceiro, definido pela Paloma no gerencial (sem seletor)
+let EDITAR = false;  // só a Paloma (operador do gerencial) edita contratos e zeragem
 let PARCEIROS = [], P = null, ORD = {k:'res', d:-1}, ABERTO = new Set();
 
 async function abrir(){
@@ -397,6 +401,7 @@ async function abrir(){
     await SB.auth.signOut();
     return telaLogin('Este usuário não tem acesso ao painel comercial.');
   }
+  EDITAR = !!q.data.editar;
   el('quem').innerHTML = 'Olá, <b>' + esc(q.data.nome || '') + '</b>';
   el('quem').classList.remove('oculto'); el('sair').classList.remove('oculto');
   const r = await SB.rpc('comercial_parceiros');
@@ -586,6 +591,13 @@ function render(){
   el('sAtivosU').textContent = 'de ' + num(ct.clientes_mov) + ' com movimento';
   el('sCon').textContent = num(m.contratos);
   el('sZer').textContent = num(m.zeragem);
+  marcaAjuste('sConU', m.aj_contratos, 'operados no mês');
+  marcaAjuste('sZerU', m.aj_zeragem, 'contratos zerados no mês');
+  const pode = EDITAR && !P.soma && P.id;
+  el('eCon').classList.toggle('oculto', !pode);
+  el('eZer').classList.toggle('oculto', !pode);
+  el('eCon').onclick = () => editarNumero('contratos', m);
+  el('eZer').onclick = () => editarNumero('zeragem', m);
   el('sNov').textContent = num(m.novos);
 
   el('liqBig').textContent = money(c.liq);
@@ -607,6 +619,34 @@ function render(){
   el('wLiq').textContent = money(c.liq);
 
   renderCustos(m); renderFaixas(); renderEvolucao();
+}
+
+function marcaAjuste(id, aj, padrao){
+  const u = el(id);
+  if(aj && aj.valor != null){
+    u.textContent = 'ajustado por ' + (aj.quem || '—') + ' · calculado: ' + num(aj.original);
+    u.classList.add('aj'); u.title = aj.motivo || '';
+  } else { u.textContent = padrao; u.classList.remove('aj'); u.title = ''; }
+}
+
+/* Edição de contratos e zeragem (só a Paloma; o banco confere de novo) */
+async function editarNumero(campo, m){
+  const nome = campo === 'contratos' ? 'contratos' : 'zeragem';
+  const atual = Math.round(N(m[campo]));
+  const v = prompt('Novo número de ' + nome + ' de ' + mesNome(m.competencia) + ' para ' + P.parceiro +
+                   '.\nDeixe vazio para voltar ao número calculado.', String(atual));
+  if(v === null) return;
+  const limpo = v.replace(/\./g, '').replace(/\s/g, '');
+  if(limpo !== '' && !/^\d+$/.test(limpo)) return alert('Digite só números inteiros.');
+  let motivo = null;
+  if(limpo !== ''){ motivo = prompt('Motivo (opcional):', ''); if(motivo === null) return; }
+  const r = await SB.rpc('comercial_ajustar', {p_id: P.id, p_competencia: m.competencia, p_campo: campo,
+                                               p_valor: limpo === '' ? null : Number(limpo), p_motivo: motivo});
+  if(r.error){
+    if(/permiss|JWT|aal/i.test(r.error.message)) return alert('Sem permissão para editar. Entre de novo com o código do celular.');
+    return alert('Não foi possível salvar: ' + r.error.message);
+  }
+  carregar(P.id, m.competencia);
 }
 
 function renderCustos(m){
