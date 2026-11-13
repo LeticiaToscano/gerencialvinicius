@@ -497,18 +497,30 @@ async function carregarSoma(comp){
 
 function somarPaineis(ps){
   if(ps.length === 1) return ps[0];
-  const CAMPOS = ['novos','contratos','zeragem','receita','custos','custo_op','custo_aut','custo_ake','a_pagar'];
+  const CAMPOS = ['novos','contratos','zeragem','receita','custos','custo_op','custo_aut','custo_ake'];
   const porMes = {};
   ps.forEach(p => (p.meses || []).forEach(m => {
     const a = porMes[m.competencia] || (porMes[m.competencia] = {competencia:m.competencia, modelo:'novo', bonus:0,
-      imposto_pct:m.imposto_pct, pct_parceiro:m.pct_parceiro, status:'pago', n:0});
+      imposto_pct:m.imposto_pct, pct_parceiro:m.pct_parceiro, status:'pago', n:0, _base:0, _liq:0, _aj:0});
     CAMPOS.forEach(k => a[k] = N(a[k]) + N(m[k]));
-    a.bonus += m.modelo === 'antigo' ? N(m.por_contrato) : N(m.bonus);   // cada barra no modelo dela
+    const extra = m.modelo === 'antigo' ? N(m.por_contrato) : N(m.bonus);   // cada barra no modelo dela
+    a.bonus += extra;
+    /* O prejuízo de uma barra abate o lucro da outra: o "a pagar" da soma é recalculado
+       sobre o total somado (zera só se a SOMA ficar negativa). Os ajustes manuais da
+       Paloma em cada barra são mantidos. */
+    const pctP = N(m.pct_parceiro) || 0.5, imp = N(m.imposto_pct);
+    const tot = N(m.receita) + N(m.custos) + extra;
+    const semAj = tot < 0 ? 0 : Math.round(tot * (1 - imp) * pctP * 100) / 100;
+    a._base += tot * pctP; a._liq += tot * (1 - imp) * pctP; a._aj += N(m.a_pagar) - semAj;
     if(m.status !== 'pago') a.status = null;
     a.n++;
   }));
   const meses = Object.values(porMes).sort((x, y) => x.competencia < y.competencia ? -1 : 1);
-  meses.forEach(m => { CAMPOS.concat('bonus').forEach(k => m[k] = Math.round(m[k] * 100) / 100); });
+  meses.forEach(m => {
+    m.a_pagar = (m._base < 0 ? 0 : m._liq) + m._aj;
+    delete m._base; delete m._liq; delete m._aj;
+    CAMPOS.concat('bonus', 'a_pagar').forEach(k => m[k] = Math.round(m[k] * 100) / 100);
+  });
   const comp = ps.map(p => p.competencia).filter(Boolean).sort().pop() || null;
   const doMes = ps.filter(p => p.competencia === comp);
   const fx = {};
