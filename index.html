@@ -272,7 +272,7 @@ tfoot td{border-top:1px solid var(--line-2);color:var(--txt);font-weight:700;fon
       </div>
 
       <div class="section" id="secFaixas">
-        <div class="sec-head"><h2>De onde vem o bônus</h2><span class="sh-sub">clientes bonificados em cada faixa de pontos no mês · valores totais, antes da divisão</span><span class="sh-line"></span></div>
+        <div class="sec-head"><h2>De onde vem o bônus</h2><span class="sh-sub">clientes bonificados em cada faixa de pontos no mês · parte do parceiro</span><span class="sh-line"></span></div>
         <div class="card">
           <div class="rola"><table>
             <thead><tr><th>Faixa de pontos</th><th class="n">Clientes</th><th class="n">Bônus por cliente</th><th class="n">Bônus da faixa</th><th class="n">% do bônus</th></tr></thead>
@@ -592,7 +592,9 @@ function renderFaixas(){
   const sec = el('secFaixas');
   sec.classList.toggle('oculto', MODELO === 'antigo');
   if(MODELO === 'antigo') return;
-  const fx = P.faixas || [], tot = fx.reduce((t, f) => t + N(f.total), 0), qt = fx.reduce((t, f) => t + N(f.clientes), 0);
+  const mm = mesAtual(), pp = (mm && N(mm.pct_parceiro)) || 0.5;          // valor do parceiro, não o total
+  const fx = (P.faixas || []).map(f => ({...f, bonus: N(f.bonus) * pp, total: N(f.total) * pp}));
+  const tot = fx.reduce((t, f) => t + N(f.total), 0), qt = fx.reduce((t, f) => t + N(f.clientes), 0);
   if(!fx.length){
     el('corpoFx').innerHTML = '<tr><td colspan="5" class="vazio">Nenhum cliente bonificado neste mês.</td></tr>';
     el('rodFx').innerHTML = ''; return;
